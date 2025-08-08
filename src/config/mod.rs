@@ -195,7 +195,7 @@ pub enum ResizeMode {
 }
 
 /// Supported image formats
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum ImageFormat {
     Jpeg,

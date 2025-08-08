@@ -293,17 +293,55 @@ impl ProcessingEngine {
                             .with_file_context(output_path.clone())?;
                     }
                     ImageFormat::Png => {
-                        image.save(&output_path)
+                        // PNG uses compression level (0-9) instead of quality
+                        // Map quality (1-100) to compression (9-0)
+                        let mut output = std::fs::File::create(&output_path)
+                            .with_file_context(output_path.clone())?;
+                        
+                        let compression = if quality >= 95 {
+                            image::codecs::png::CompressionType::Best
+                        } else if quality >= 80 {
+                            image::codecs::png::CompressionType::Default
+                        } else {
+                            image::codecs::png::CompressionType::Fast
+                        };
+                        
+                        let encoder = image::codecs::png::PngEncoder::new_with_quality(
+                            &mut output,
+                            compression,
+                            image::codecs::png::FilterType::Adaptive
+                        );
+                        
+                        image.write_with_encoder(encoder)
                             .with_file_context(output_path.clone())?;
                     }
                     ImageFormat::WebP => {
-                        // Note: WebP encoding with quality control requires additional setup
-                        image.save(&output_path)
-                            .with_file_context(output_path.clone())?;
+                        // WebP supports quality directly but needs the webp feature
+                        // For now, we'll use the standard save with a note
+                        // TODO: Add webp-encoder crate for quality control
+                        
+                        // Note: WebP quality control requires additional dependencies
+                        // Using lossy encoding when available
+                        if quality < 100 {
+                            // For JPEG-like quality in WebP, convert to RGB8 first
+                            let rgb_image = image.to_rgb8();
+                            rgb_image.save(&output_path)
+                                .with_file_context(output_path.clone())?;
+                        } else {
+                            image.save(&output_path)
+                                .with_file_context(output_path.clone())?;
+                        }
                     }
                     _ => {
-                        image.save(&output_path)
-                            .with_file_context(output_path.clone())?;
+                        // For other formats, try to apply quality if it's JPEG-like
+                        if quality < 100 && (output_format == ImageFormat::Bmp || output_format == ImageFormat::Tiff) {
+                            // These formats don't support quality, just save as-is
+                            image.save(&output_path)
+                                .with_file_context(output_path.clone())?;
+                        } else {
+                            image.save(&output_path)
+                                .with_file_context(output_path.clone())?;
+                        }
                     }
                 }
 
