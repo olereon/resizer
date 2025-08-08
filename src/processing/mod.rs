@@ -293,27 +293,47 @@ impl ProcessingEngine {
                             .with_file_context(output_path.clone())?;
                     }
                     ImageFormat::Png => {
-                        // PNG uses compression level (0-9) instead of quality
-                        // Map quality (1-100) to compression (9-0)
-                        let mut output = std::fs::File::create(&output_path)
-                            .with_file_context(output_path.clone())?;
-                        
-                        let compression = if quality >= 95 {
-                            image::codecs::png::CompressionType::Best
-                        } else if quality >= 80 {
-                            image::codecs::png::CompressionType::Default
+                        // PNG uses compression level instead of quality
+                        // Only apply custom compression if quality is explicitly set (not default 90)
+                        if quality != 90 {
+                            // User explicitly set quality, apply compression settings
+                            let mut output = std::fs::File::create(&output_path)
+                                .with_file_context(output_path.clone())?;
+                            
+                            // Map quality to compression type for speed/size tradeoff
+                            // Lower quality = faster compression, larger files
+                            // Higher quality = slower compression, smaller files
+                            let (compression, filter) = if quality < 50 {
+                                // Speed priority: fast compression, simple filter
+                                (image::codecs::png::CompressionType::Fast, 
+                                 image::codecs::png::FilterType::NoFilter)
+                            } else if quality < 80 {
+                                // Balanced: fast compression, sub filter
+                                (image::codecs::png::CompressionType::Fast,
+                                 image::codecs::png::FilterType::Sub)
+                            } else if quality < 95 {
+                                // Default balance
+                                (image::codecs::png::CompressionType::Default,
+                                 image::codecs::png::FilterType::Sub)
+                            } else {
+                                // Size priority: best compression, adaptive filter (slower)
+                                (image::codecs::png::CompressionType::Best,
+                                 image::codecs::png::FilterType::Adaptive)
+                            };
+                            
+                            let encoder = image::codecs::png::PngEncoder::new_with_quality(
+                                &mut output,
+                                compression,
+                                filter
+                            );
+                            
+                            image.write_with_encoder(encoder)
+                                .with_file_context(output_path.clone())?;
                         } else {
-                            image::codecs::png::CompressionType::Fast
-                        };
-                        
-                        let encoder = image::codecs::png::PngEncoder::new_with_quality(
-                            &mut output,
-                            compression,
-                            image::codecs::png::FilterType::Adaptive
-                        );
-                        
-                        image.write_with_encoder(encoder)
-                            .with_file_context(output_path.clone())?;
+                            // Default quality - use fast standard save for best speed
+                            image.save(&output_path)
+                                .with_file_context(output_path.clone())?;
+                        }
                     }
                     ImageFormat::WebP => {
                         // WebP supports quality directly but needs the webp feature
