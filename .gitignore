@@ -1,0 +1,64 @@
+# Rust
+/target/
+Cargo.lock
+*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+/dist/
+/build/
+*.exe
+*.dmg
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+
+# Test files
+/test-images/
+/test-output/
+/benchmarks/output/
+*.test.jpg
+*.test.png
+
+# Logs
+*.log
+logs/
+
+# Configuration overrides
+config.local.toml
+config.local.yaml
+.env.local
+
+# Coverage reports
+/coverage/
+*.profraw
+*.profdata
+
+# Temporary files
+/tmp/
+*.tmp
+*.temp
+
+# Documentation build
+/docs/site/
+/docs/_build/
+
+# Release artifacts
+/releases/
+/packages/

@@ -1,0 +1,106 @@
+[package]
+name = "fastresize"
+version = "0.1.0"
+edition = "2021"
+authors = ["FastResize Contributors"]
+description = "High-performance batch image resizer for automation workflows"
+license = "MIT"
+repository = "https://github.com/olereon/resizer"
+homepage = "https://github.com/olereon/resizer"
+documentation = "https://docs.rs/fastresize"
+keywords = ["image", "resize", "batch", "cli", "performance"]
+categories = ["command-line-utilities", "multimedia::images"]
+readme = "README.md"
+
+[dependencies]
+# Core image processing - mature, well-maintained
+image = { version = "0.24", features = ["jpeg", "png", "webp", "gif", "tiff"] }
+imageproc = "0.23"
+
+# Parallel processing - industry standard
+rayon = "1.8"
+
+# CLI and configuration - ergonomic, feature-complete
+clap = { version = "4.4", features = ["derive", "env", "unicode", "wrap_help"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+serde_yaml = "0.9"
+
+# Async I/O and file watching - tokio ecosystem
+tokio = { version = "1.33", features = ["rt-multi-thread", "fs", "time", "signal", "sync", "io-util", "macros"] }
+notify = "6.1"
+
+# Progress and logging - user experience
+indicatif = "0.17"
+console = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Memory management and utilities
+memmap2 = "0.9"
+crossbeam = "0.8"
+once_cell = "1.18"
+walkdir = "2.4"
+
+# Performance monitoring
+sysinfo = "0.29"
+num_cpus = "1.16"
+
+# File format detection
+infer = "0.15"
+
+# Futures utilities
+futures = "0.3"
+
+# Serialization for JSON output
+serde_json = "1.0"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
+assert_cmd = "2.0"
+predicates = "3.0"
+
+[[bin]]
+name = "fastresize"
+path = "src/main.rs"
+
+[lib]
+name = "fastresize"
+path = "src/lib.rs"
+
+[[bench]]
+name = "resize_benchmark"
+harness = false
+
+[profile.release]
+# Optimize for performance
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+# Fast compilation during development
+opt-level = 0
+debug = true
+overflow-checks = true
+
+[profile.bench]
+# Benchmarking profile
+opt-level = 3
+debug = true
+lto = true
+
+[features]
+default = ["simd", "gpu"]
+simd = []           # SIMD optimizations
+gpu = []            # GPU acceleration (experimental)
+mmap = []           # Memory-mapped file processing
+profiling = []      # Performance profiling hooks
+automation = []     # Automation features (watch mode)

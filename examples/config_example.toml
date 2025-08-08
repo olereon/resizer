@@ -1,0 +1,61 @@
+# Example FastResize configuration file
+
+[profiles.web]
+type = "width"
+width = 1920
+quality = 85
+format = "webp"
+suffix = "_web"
+
+[profiles.mobile]  
+type = "width"
+width = 768
+quality = 75
+format = "webp"
+suffix = "_mobile"
+
+[profiles.thumbnail]
+type = "fit"
+width = 300
+height = 300
+quality = 80
+format = "webp" 
+suffix = "_thumb"
+
+[profiles.print]
+type = "width"
+width = 3000
+quality = 95
+suffix = "_print"
+
+[processing]
+threads = "auto"
+memory_limit = "4GB"
+recursive = false
+max_file_size = 104857600  # 100MB
+max_image_pixels = 500000000  # 500 megapixels
+timeout_seconds = 30
+batch_size = 50
+
+[automation]
+watch_interval = 1000
+error_retry = 3
+progress_reporting = true
+json_output = false
+
+[[automation.watch_folders]]
+path = "./uploads"
+profile = "web"
+output = "./web"
+recursive = true
+
+[[automation.watch_folders]]
+path = "./uploads"
+profile = "thumbnail"
+output = "./thumbnails"
+recursive = true
+
+[logging]
+level = "info"
+json_format = false
+# file = "fastresize.log"  # Uncomment to log to file
