@@ -83,6 +83,7 @@ OPTIONS:
         --watch                  Watch input directory for changes
         --recursive              Process subdirectories recursively
         --dry-run                Show what would be processed
+    -d, --delete-originals       Delete original files after successful resize
         --json                   Output progress as JSON
         --verbose                Enable verbose logging
         --help                   Print help information
@@ -103,6 +104,12 @@ EXAMPLES:
 
     # Process specific files with custom naming
     fastresize -i photo1.jpg photo2.jpg -o thumbnails/ -w 300 --prefix thumb_
+    
+    # Replace originals with resized versions (BE CAREFUL!)
+    fastresize -i photos/ -o photos_small/ -w 1200 -d
+    
+    # Clean up by resizing and deleting originals
+    fastresize -i uploads/ -o processed/ -w 800 -q 85 --delete-originals
 ```
 
 ### Configuration Files

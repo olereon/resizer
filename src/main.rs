@@ -92,6 +92,10 @@ struct Cli {
     #[arg(long)]
     dry_run: bool,
 
+    /// Delete original files after successful resize
+    #[arg(short = 'd', long, conflicts_with = "dry_run")]
+    delete_originals: bool,
+
     /// Output progress as JSON
     #[arg(long)]
     json: bool,
@@ -259,6 +263,15 @@ async fn main() {
         }
     } else {
         // Run single batch processing
+        
+        // Show warning if delete option is used
+        if cli.delete_originals && !cli.quiet {
+            println!("{}: Original files will be deleted after successful processing", 
+                     style("Warning").yellow().bold());
+            println!("Make sure you have backups if needed!");
+            println!();
+        }
+        
         let start_time = Instant::now();
         match run_batch_processing(&cli, &input_path, &output_path, &resize_config, &config).await {
             Ok(results) => {
@@ -388,6 +401,23 @@ async fn run_batch_processing(
                 results.successful += 1;
                 results.total_input_size += result.original_info.file_size;
                 results.total_output_size += result.output_info.file_size;
+                
+                // Delete original file if requested and processing was successful
+                if cli.delete_originals {
+                    // Only delete if the output is different from input
+                    if file_path != &output_file_path {
+                        match tokio::fs::remove_file(file_path).await {
+                            Ok(_) => {
+                                debug!("Deleted original file: {}", file_path.display());
+                            }
+                            Err(e) => {
+                                warn!("Failed to delete original file {}: {}", file_path.display(), e);
+                            }
+                        }
+                    } else {
+                        debug!("Skipping deletion: input and output paths are the same");
+                    }
+                }
                 
                 if cli.json {
                     // Note: ProcessingResult needs Serialize trait

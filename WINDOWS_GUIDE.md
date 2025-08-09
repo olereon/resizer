@@ -74,6 +74,12 @@ fastresize.exe -i C:\Photos -o C:\Processed -w 1200 --recursive
 
 # Convert format while resizing
 fastresize.exe -i C:\RAW -o C:\JPEG -w 2000 -f jpeg -q 95
+
+# Delete originals after successful resize (BE CAREFUL!)
+fastresize.exe -i C:\ToProcess -o C:\Processed -w 1920 -d
+
+# Clean up large files by replacing with smaller versions
+fastresize.exe -i C:\LargePhotos -o C:\Optimized -w 2000 -q 85 --delete-originals
 ```
 
 ### Using Configuration Files
